@@ -21,9 +21,9 @@ export class draw extends Component {
   uiTransform: UITransform = null;
   isDown = false;
 
-  pointStart = new Vec2();
-  pointEnd = new Vec2();
-  pointMove = new Vec2();
+  pointStart = new Vec2(0, 0);
+  pointEnd = new Vec2(100, 100);
+  pointMove = new Vec2(-100, 100);
 
   start() {
     this.draw();
@@ -74,6 +74,7 @@ export class draw extends Component {
     graphics.stroke();
     graphics.moveTo(this.pointEnd.x, this.pointEnd.y);
     graphics.strokeColor.fromHEX("#00ff00");
+
     graphics.lineTo(this.pointMove.x, this.pointMove.y);
     graphics.stroke();
   }
@@ -87,6 +88,7 @@ export class draw extends Component {
     graphics.strokeColor.fromHEX("#0000ff");
     graphics.circle(X, Y, R);
     graphics.stroke();
+
     console.log(this.getArcLength(this.pointStart, this.pointEnd, X, Y, R));
   }
   getCenterAndRadius(pointStart, pointEnd, pointMove) {
@@ -112,26 +114,39 @@ export class draw extends Component {
     this.graphics.circle(X, Y, 2);
     this.graphics.fillColor.fromHEX("#ff0000");
     this.graphics.fill();
+    this.graphics.circle(pointMove.x, pointMove.y, 2);
+    this.graphics.fillColor.fromHEX("#00FF00");
+    this.graphics.fill();
+    /*  */
     this.graphics.moveTo(X, Y);
     this.graphics.lineTo(pointStart.x, pointStart.y);
     this.graphics.moveTo(X, Y);
     this.graphics.lineTo(pointEnd.x, pointEnd.y);
     this.graphics.strokeColor.fromHEX("#ecf11c");
     this.graphics.stroke();
+
     /*  */
     return [X, Y, R];
   }
 
-  getArcLength(poi1: Vec2, poi2: Vec2, X, Y, R) {
-    const distance = Vec2.distance(poi1, poi2);
+  getArcLength(
+    pointStart: Vec2,
+    pointEnd: Vec2,
+    X: number,
+    Y: number,
+    R: number,
+  ) {
+    const distance = Vec2.distance(pointStart, pointEnd);
     const distanceHalf = distance / 2; // 一条边的长
     const radianHalf = Math.acos(distanceHalf / R); // 一条边的弧度
     const radian = 2 * radianHalf; // 两条边的弧度
     const angle = (radian * 180) / Math.PI; // 弧度转角度
+    const L = R * radian; // 弧长L
     return {
       angle,
       radian,
       distance,
+      L,
     };
   }
 }
