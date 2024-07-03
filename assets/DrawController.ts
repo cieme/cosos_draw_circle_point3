@@ -22,8 +22,8 @@ export class draw extends Component {
   isDown = false;
 
   pointStart = new Vec2(0, 0);
-  pointEnd = new Vec2(100, 100);
-  pointMove = new Vec2(-100, 100);
+  pointEnd = new Vec2(200, 100);
+  pointMove = new Vec2(-30, 90);
 
   start() {
     this.draw();
@@ -59,6 +59,9 @@ export class draw extends Component {
       this.pointMove = new Vec2(xx.x, xx.y);
       this.draw();
       this.drawCircle();
+      console.log(
+        this.getDirection(this.pointStart, this.pointEnd, this.pointMove),
+      );
     }
   }
   onTouchEnd() {
@@ -151,5 +154,14 @@ export class draw extends Component {
       distance,
       L,
     };
+  }
+  // 判断方向，向上还是向下
+  getDirection(pointStart: Vec2, pointEnd: Vec2, pointMove: Vec2) {
+    const k = (pointEnd.y - pointStart.y) / (pointEnd.x - pointStart.x); // 以y轴为基准，计算斜率 （）
+    const b = pointStart.y - k * pointStart.x;
+    const y = pointMove.y;
+    const x = pointMove.x;
+    const result = y - k * x - b;
+    return result < 0 ? "down" : "up";
   }
 }
