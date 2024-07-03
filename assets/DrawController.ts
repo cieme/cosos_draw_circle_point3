@@ -81,9 +81,6 @@ export class draw extends Component {
   runCode() {
     this.draw();
     this.drawCircle();
-    console.log(
-      this.getDirection(this.pointStart, this.pointEnd, this.pointMove),
-    );
   }
   onTouchEnd() {
     this.isDown = false;
@@ -110,10 +107,23 @@ export class draw extends Component {
     );
     const graphics = this.graphics;
     graphics.strokeColor.fromHEX("#0000ff");
-    graphics.circle(X, Y, R);
+    const radian = this.getRadianByPointAndCenter(
+      this.pointStart,
+      new Vec2(X, Y),
+    );
+    const radian2 = this.getRadianByPointAndCenter(
+      this.pointEnd,
+      new Vec2(X, Y),
+    );
+    const counterclockwise = this.getDirection(
+      this.pointStart,
+      this.pointEnd,
+      this.pointMove,
+    );
+    graphics.arc(X, Y, R, radian, radian2, counterclockwise); // false代表顺时针
     graphics.stroke();
 
-    console.log(this.getArcLength(this.pointStart, this.pointEnd, X, Y, R));
+    console.log(this.getArcLength(this.pointStart, this.pointEnd, R));
   }
   getCenterAndRadius(pointStart, pointEnd, pointMove) {
     let x1, y1, x2, y2, x3, y3;
@@ -156,13 +166,7 @@ export class draw extends Component {
     return [X, Y, R];
   }
 
-  getArcLength(
-    pointStart: Vec2,
-    pointEnd: Vec2,
-    X: number,
-    Y: number,
-    R: number,
-  ) {
+  getArcLength(pointStart: Vec2, pointEnd: Vec2, R: number) {
     const distance = Vec2.distance(pointStart, pointEnd);
     const distanceHalf = distance / 2; // 一条边的长
     const radianHalf = Math.acos(distanceHalf / R); // 一条边的弧度
@@ -176,6 +180,19 @@ export class draw extends Component {
       L,
     };
   }
+  /**
+   * 根据中心建立直角坐标系,求其夹角
+   * @author cieme
+   * @date 2024-07-03
+   * @param {any} point
+   * @param {any} center
+   * @returns {any}
+   */
+  getRadianByPointAndCenter(point, center) {
+    const x = point.x - center.x;
+    const y = point.y - center.y;
+    return Math.atan2(y, x);
+  }
   // 判断方向，向上还是向下
   getDirection(pointStart: Vec2, pointEnd: Vec2, pointMove: Vec2) {
     const k = (pointEnd.y - pointStart.y) / (pointEnd.x - pointStart.x); // 以y轴为基准，计算斜率 （）
@@ -183,6 +200,6 @@ export class draw extends Component {
     const y = pointMove.y;
     const x = pointMove.x;
     const result = y - k * x - b;
-    return result < 0 ? "down" : "up";
+    return result < 0 ? false : true;
   }
 }
