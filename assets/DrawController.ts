@@ -111,10 +111,13 @@ export class draw extends Component {
     Y = (a * g - c * e) / (a * f - b * e);
     R = Math.sqrt((X - x1) * (X - x1) + (Y - y1) * (Y - y1));
     /*  */
-    this.graphics.circle(X, Y, 2);
+    this.graphics.circle(x1, y1, 4);
     this.graphics.fillColor.fromHEX("#ff0000");
     this.graphics.fill();
-    this.graphics.circle(pointMove.x, pointMove.y, 2);
+    this.graphics.circle(X, Y, 4);
+    this.graphics.fillColor.fromHEX("#B946F0");
+    this.graphics.fill();
+    this.graphics.circle(pointMove.x, pointMove.y, 4);
     this.graphics.fillColor.fromHEX("#00FF00");
     this.graphics.fill();
     /*  */
@@ -141,7 +144,7 @@ export class draw extends Component {
     const radianHalf = Math.acos(distanceHalf / R); // 一条边的弧度
     const radian = 2 * radianHalf; // 两条边的弧度
     const angle = (radian * 180) / Math.PI; // 弧度转角度
-    const L = R * radian; // 弧长L
+    const L = R * radian; // 弧长L 不太对，似乎要判断正负
     return {
       angle,
       radian,

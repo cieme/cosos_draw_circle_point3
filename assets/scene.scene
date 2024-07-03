@@ -301,9 +301,9 @@
     "_lineWidth": 2,
     "_strokeColor": {
       "__type__": "cc.Color",
-      "r": 125,
-      "g": 213,
-      "b": 75,
+      "r": 185,
+      "g": 70,
+      "b": 240,
       "a": 255
     },
     "_lineJoin": 2,
