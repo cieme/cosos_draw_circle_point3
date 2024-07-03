@@ -331,6 +331,9 @@
     "graphics": {
       "__id__": 7
     },
+    "uiTransform": {
+      "__id__": 6
+    },
     "_id": "59AUhcghJPkaV86b8B/ZT+"
   },
   {
