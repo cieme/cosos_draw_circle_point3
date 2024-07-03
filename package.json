@@ -1,0 +1,10 @@
+{
+  "name": "轨道测试",
+  "uuid": "5a37d93b-a89c-481a-909e-562ab9f95feb",
+  "creator": {
+    "version": "3.8.3"
+  },
+  "dependencies": {
+    "prettier": "^3.3.2"
+  }
+}
