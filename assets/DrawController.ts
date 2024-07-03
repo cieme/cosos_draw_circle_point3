@@ -17,15 +17,21 @@ const { ccclass, property } = _decorator;
 export class draw extends Component {
   @property(Graphics)
   graphics: Graphics = null;
+  @property(Node)
+  startNode: Node = null;
+  @property(Node)
+  endNode: Node = null;
   @property(UITransform)
   uiTransform: UITransform = null;
   isDown = false;
 
-  pointStart = new Vec2(0, 0);
-  pointEnd = new Vec2(200, 100);
-  pointMove = new Vec2(-30, 90);
+  pointStart = new Vec2(90, 10);
+  pointEnd = new Vec2(-180, -30);
+  pointMove = new Vec2(-30, 100);
 
-  start() {
+  onLoad() {
+    this.startNode.position.set(this.pointStart.x, this.pointStart.y);
+    this.endNode.position.set(this.pointEnd.x, this.pointEnd.y);
     this.draw();
     this.drawCircle();
   }
@@ -37,6 +43,8 @@ export class draw extends Component {
     this.removeEvent();
   }
   setEvent() {
+    this.startNode.on("drag", this.onStartMove, this);
+    this.endNode.on("drag", this.onEndMove, this);
     input.on(Input.EventType.MOUSE_DOWN, this.onMouseDown, this);
     input.on(Input.EventType.TOUCH_MOVE, this.onTouchMove, this);
     input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
@@ -48,6 +56,14 @@ export class draw extends Component {
     input.off(Input.EventType.TOUCH_END, this.onTouchEnd, this);
     input.off(Input.EventType.TOUCH_CANCEL, this.onTouchEnd, this);
   }
+  onStartMove(e: Vec3) {
+    this.pointStart = new Vec2(e.x, e.y);
+    this.runCode();
+  }
+  onEndMove(e: Vec3) {
+    this.pointEnd = new Vec2(e.x, e.y);
+    this.runCode();
+  }
   onMouseDown(e: EventMouse) {
     this.isDown = true;
   }
@@ -57,12 +73,15 @@ export class draw extends Component {
       const y = e.getUILocation().y;
       const xx = this.uiTransform.convertToNodeSpaceAR(new Vec3(x, y, 0));
       this.pointMove = new Vec2(xx.x, xx.y);
-      this.draw();
-      this.drawCircle();
-      console.log(
-        this.getDirection(this.pointStart, this.pointEnd, this.pointMove),
-      );
+      this.runCode();
     }
+  }
+  runCode() {
+    this.draw();
+    this.drawCircle();
+    console.log(
+      this.getDirection(this.pointStart, this.pointEnd, this.pointMove),
+    );
   }
   onTouchEnd() {
     this.isDown = false;
