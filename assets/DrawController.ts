@@ -65,7 +65,9 @@ export class draw extends Component {
     this.runCode();
   }
   onMouseDown(e: EventMouse) {
-    this.isDown = true;
+    if (e.getButton() == EventMouse.BUTTON_LEFT) {
+      this.isDown = true;
+    }
   }
   onTouchMove(e: EventTouch) {
     if (this.isDown) {

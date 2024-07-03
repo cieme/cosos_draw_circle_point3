@@ -36,7 +36,9 @@ export class DragCcontroller extends Component {
     input.off(Input.EventType.TOUCH_CANCEL, this.onTouchEnd, this);
   }
   onMouseDown(e: EventMouse) {
-    this.isDown = true;
+    if (e.getButton() == EventMouse.BUTTON_LEFT) {
+      this.isDown = true;
+    }
   }
   onTouchMove(e: EventTouch) {
     if (this.isDown) {
