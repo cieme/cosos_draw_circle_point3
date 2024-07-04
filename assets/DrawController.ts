@@ -13,8 +13,8 @@ import {
 } from "cc";
 const { ccclass, property } = _decorator;
 
-@ccclass("draw")
-export class draw extends Component {
+@ccclass("DrawController")
+export class DrawController extends Component {
   @property(Graphics)
   graphics: Graphics = null;
   @property(Node)
@@ -25,15 +25,14 @@ export class draw extends Component {
   uiTransform: UITransform = null;
   isDown = false;
 
-  pointStart = new Vec2(90, 10);
-  pointEnd = new Vec2(-180, -30);
-  pointMove = new Vec2(-30, 100);
+  pointStart = new Vec2(90, -100);
+  pointEnd = new Vec2(90, 100);
+  pointMove = new Vec2(50, 150);
 
   onLoad() {
     this.startNode.position.set(this.pointStart.x, this.pointStart.y);
     this.endNode.position.set(this.pointEnd.x, this.pointEnd.y);
-    this.draw();
-    this.drawCircle();
+    this.runCode();
   }
   protected onEnable(): void {
     this.setEvent();
@@ -73,18 +72,26 @@ export class draw extends Component {
     if (this.isDown) {
       const x = e.getUILocation().x;
       const y = e.getUILocation().y;
-      const xx = this.uiTransform.convertToNodeSpaceAR(new Vec3(x, y, 0));
-      this.pointMove = new Vec2(xx.x, xx.y);
+      const localPos = this.uiTransform.convertToNodeSpaceAR(new Vec3(x, y, 0));
+      this.pointMove = new Vec2(localPos.x, localPos.y);
       this.runCode();
     }
   }
+
+  onTouchEnd() {
+    this.isDown = false;
+  }
+
   runCode() {
     this.draw();
     this.drawCircle();
   }
-  onTouchEnd() {
-    this.isDown = false;
-  }
+  /**
+   * 绘制
+   * @author cieme
+   * @date 2024-07-04
+   * @returns {any}
+   */
   draw() {
     const graphics = this.graphics;
     graphics.clear();
@@ -99,6 +106,12 @@ export class draw extends Component {
     graphics.lineTo(this.pointMove.x, this.pointMove.y);
     graphics.stroke();
   }
+  /**
+   * 绘制圆
+   * @author cieme
+   * @date 2024-07-04
+   * @returns {any}
+   */
   drawCircle() {
     const [X, Y, R] = this.getCenterAndRadius(
       this.pointStart,
@@ -115,16 +128,35 @@ export class draw extends Component {
       this.pointEnd,
       new Vec2(X, Y),
     );
-    const counterclockwise = this.getDirection(
+    const quadrant = this.getQuadrant(
       this.pointStart,
       this.pointEnd,
       this.pointMove,
     );
+    const k = this.getSlope(this.pointStart, this.pointEnd);
+    let counterclockwise = true;
+    if (k === Infinity) {
+      counterclockwise = quadrant === 1 || quadrant === 4 ? true : false;
+    } else if (k === -Infinity) {
+      counterclockwise = quadrant === 2 || quadrant === 3 ? true : false;
+    } else {
+      counterclockwise = quadrant === 1 || quadrant === 2 ? true : false;
+    }
+
     graphics.arc(X, Y, R, radian, radian2, counterclockwise); // false代表顺时针
     graphics.stroke();
 
-    console.log(this.getArcLength(this.pointStart, this.pointEnd, R));
+    // console.log(this.getArcLength(this.pointStart, this.pointEnd, R));
   }
+  /**
+   * 计算中心点和半径
+   * @author cieme
+   * @date 2024-07-04
+   * @param {any} pointStart
+   * @param {any} pointEnd
+   * @param {any} pointMove
+   * @returns {any}
+   */
   getCenterAndRadius(pointStart, pointEnd, pointMove) {
     let x1, y1, x2, y2, x3, y3;
     let a, b, c, g, e, f;
@@ -166,6 +198,15 @@ export class draw extends Component {
     return [X, Y, R];
   }
 
+  /**
+   * 获取弧长
+   * @author cieme
+   * @date 2024-07-04
+   * @param {any} pointStart:Vec2
+   * @param {any} pointEnd:Vec2
+   * @param {any} R:number
+   * @returns {any}
+   */
   getArcLength(pointStart: Vec2, pointEnd: Vec2, R: number) {
     const distance = Vec2.distance(pointStart, pointEnd);
     const distanceHalf = distance / 2; // 一条边的长
@@ -193,13 +234,101 @@ export class draw extends Component {
     const y = point.y - center.y;
     return Math.atan2(y, x);
   }
-  // 判断方向，向上还是向下
-  getDirection(pointStart: Vec2, pointEnd: Vec2, pointMove: Vec2) {
-    const k = (pointEnd.y - pointStart.y) / (pointEnd.x - pointStart.x); // 以y轴为基准，计算斜率 （）
+  /**
+   * 判断象限
+   * @author cieme
+   * @date 2024-07-04
+   * @param {any} pointStart:Vec2
+   * @param {any} pointEnd:Vec2
+   * @param {any} pointMove:Vec2
+   * @returns {any}
+   */
+  getQuadrant(pointStart: Vec2, pointEnd: Vec2, pointMove: Vec2) {
+    const k = this.getSlope(pointStart, pointEnd);
+
+    let quadrant: 1 | 2 | 3 | 4 = 1;
+    // 为垂线
+    if (k === Infinity) {
+      if (pointMove.x - pointStart.x > 0 && pointMove.y - pointStart.y > 0) {
+        quadrant = 1; //1
+      } else if (
+        pointMove.x - pointStart.x < 0 &&
+        pointMove.y - pointStart.y > 0
+      ) {
+        quadrant = 2; // 2
+      } else if (
+        pointMove.x - pointStart.x < 0 &&
+        pointMove.y - pointStart.y < 0
+      ) {
+        quadrant = 3; //3
+      } else {
+        quadrant = 4; //4
+      }
+
+      return quadrant;
+    } else if (k === -Infinity) {
+      if (pointMove.x - pointStart.x > 0 && pointMove.y - pointStart.y > 0) {
+        quadrant = 1; // 1
+      } else if (
+        pointMove.x - pointStart.x < 0 &&
+        pointMove.y - pointStart.y > 0
+      ) {
+        quadrant = 2; // 2
+      } else if (
+        pointMove.x - pointStart.x < 0 &&
+        pointMove.y - pointStart.y < 0
+      ) {
+        quadrant = 3; // 3
+      } else {
+        quadrant = 4; // 4
+      }
+      return quadrant;
+    }
     const b = pointStart.y - k * pointStart.x;
-    const y = pointMove.y;
-    const x = pointMove.x;
-    const result = y - k * x - b;
-    return result < 0 ? false : true;
+
+    const resultY = pointMove.y - k * pointMove.x - b;
+    const resultX = pointMove.x - (pointMove.y - b) / k;
+    // 判断在哪个象限
+
+    if (pointStart.x > pointEnd.x) {
+      if (resultY > 0) {
+        quadrant = 2;
+      } else {
+        quadrant = 3;
+      }
+    }
+    if (pointStart.x < pointEnd.x) {
+      if (resultY > 0) {
+        quadrant = 4;
+      } else {
+        quadrant = 1;
+      }
+    }
+    return quadrant;
+  }
+  /**
+   * 获取斜率
+   * @author cieme
+   * @date 2024-07-04
+   * @param {any} pointStart
+   * @param {any} pointEnd
+   * @returns {any}
+   */
+  getSlope(pointStart, pointEnd) {
+    const k = (pointEnd.y - pointStart.y) / (pointEnd.x - pointStart.x); // 以y轴为基准，计算斜率 （）
+    return k;
+  }
+  /**
+   * 获取两点中心
+   * @author cieme
+   * @date 2024-07-04
+   * @param {any} pointStart:Vec2
+   * @param {any} pointEnd:Vec2
+   * @returns {any}
+   */
+  getCenter(pointStart: Vec2, pointEnd: Vec2) {
+    const x = (pointStart.x + pointEnd.x) / 2;
+    const y = (pointStart.y + pointEnd.y) / 2;
+    return new Vec2(x, y);
   }
 }
