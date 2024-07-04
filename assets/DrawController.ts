@@ -113,11 +113,14 @@ export class DrawController extends Component {
    * @returns {any}
    */
   drawCircle() {
-    const [X, Y, R] = this.getCenterAndRadius(
+    const [originX, originY, R] = this.getCenterAndRadius(
       this.pointStart,
       this.pointEnd,
       this.pointMove,
     );
+    this.drawCircleByCenter(originX, originY, R);
+  }
+  drawCircleByCenter(X, Y, R) {
     const graphics = this.graphics;
     graphics.strokeColor.fromHEX("#0000ff");
     const radian = this.getRadianByPointAndCenter(
@@ -145,17 +148,16 @@ export class DrawController extends Component {
 
     graphics.arc(X, Y, R, radian, radian2, counterclockwise); // false代表顺时针
     graphics.stroke();
-
-    // console.log(this.getArcLength(this.pointStart, this.pointEnd, R));
   }
+
   /**
-   * 计算中心点和半径
+   * Description
    * @author cieme
    * @date 2024-07-04
    * @param {any} pointStart
    * @param {any} pointEnd
    * @param {any} pointMove
-   * @returns {any}
+   * @returns {Array} Array[originX: number, originY: number, originR: number]
    */
   getCenterAndRadius(pointStart, pointEnd, pointMove) {
     let x1, y1, x2, y2, x3, y3;
